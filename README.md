@@ -20,6 +20,7 @@
   > - You also need to exclude this contract from fees on Futura side
 - AutoCompoundPool
   > - This is a subclass of Stake Futura Pool, we will use that for AutoCompound or implementing a new type
+  > - Users can stake / unstake 100% of their stokens by calling stakeAll / unstakeAll
 - Cake Investment Plan (Funding Plan)
   > - This is used by the investor to invest in Pancakeswap's Cake on mainnet. For testnet we need to deploy our own masterchef (Masterchef2.sol) and Fortuna / Fortuna Split Bar tokens that will act as "Cake".
   
