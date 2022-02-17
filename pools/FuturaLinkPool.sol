@@ -76,6 +76,9 @@ contract FuturaLinkPool is IFuturaLinkPool, FuturaLinkComponent {
     }
 
     function stake(uint256 amount) external notPaused process { 
+        if (unclaimedDividendsOf(msg.sender) > 0) {
+            doClaim(msg.sender);
+        }
         doStake(msg.sender, amount);
     }
 
@@ -89,6 +92,9 @@ contract FuturaLinkPool is IFuturaLinkPool, FuturaLinkComponent {
     }
 
     function unstake(uint256 amount) external notPaused process {
+        if (unclaimedDividendsOf(msg.sender) > 0) {
+            doClaim(msg.sender);
+        }
         doUnstake(msg.sender, amount);
     }
 
@@ -125,26 +131,26 @@ contract FuturaLinkPool is IFuturaLinkPool, FuturaLinkComponent {
         doClaim(userAddress, msg.sender);
     }
 
-    function amountStakedBy(address userAddress) external view returns (uint256) {
+    function amountStakedBy(address userAddress) public view returns (uint256) {
         return userInfo[userAddress].totalStakeAmount;
     }
 
-    function unclaimedDividendsOf(address userAddress) external view returns (uint256) {
+    function unclaimedDividendsOf(address userAddress) public view returns (uint256) {
         UserInfo storage user = userInfo[userAddress];
         return (user.unclaimedDividends + calculateReward(user)) / DIVIDEND_ACCURACY;
     }
 
-    function unclaimedValueOf(address userAddress) external override view returns (uint256) {
+    function unclaimedValueOf(address userAddress) public override view returns (uint256) {
         UserInfo storage user = userInfo[userAddress];
         uint256 unclaimedDividends = (user.unclaimedDividends + calculateReward(user)) / DIVIDEND_ACCURACY;
         return valueOfOutTokens(unclaimedDividends);
     }
 
-    function totalValueClaimed(address userAddress) external override view returns(uint256) {
+    function totalValueClaimed(address userAddress) public override view returns(uint256) {
         return userInfo[userAddress].totalValueClaimed;
     }
 
-    function totalEarnedBy(address userAddress) external view returns (uint256) {
+    function totalEarnedBy(address userAddress) public view returns (uint256) {
         UserInfo storage user = userInfo[userAddress];
         return (user.earned + calculateReward(user)) / DIVIDEND_ACCURACY;
     }
@@ -193,6 +199,7 @@ contract FuturaLinkPool is IFuturaLinkPool, FuturaLinkComponent {
         require(amount > 0, "FuturaLinkPool: Invalid amount");
         require(isStakingEnabled, "FuturaLinkPool: Disabled");
 
+        fillPoolInternal(); //Use staking / unstake to fill the pool
         updateStakingOf(userAddress);
 
         require(inToken.balanceOf(spender) > amount, "FuturaLinkPool: Insufficient balance");
@@ -213,6 +220,7 @@ contract FuturaLinkPool is IFuturaLinkPool, FuturaLinkComponent {
     function doUnstake(address userAddress, uint256 amount) internal {
         require(amount > 0, "FuturaLinkPool: Invalid amount");
         
+        fillPoolInternal(); //Use staking / unstake to fill the pool
         updateStakingOf(userAddress);
 
         UserInfo storage user = userInfo[userAddress];
@@ -282,6 +290,17 @@ contract FuturaLinkPool is IFuturaLinkPool, FuturaLinkComponent {
         uint256 incomingBalanceOut = outToken.balanceOf(address(this)) - previousBalanceOut;
         if (incomingBalanceOut > 0) {
             onDeposit(incomingBalanceOut);
+        }
+    }
+
+    function fillPoolInternal() internal {
+        if (futura.isRewardReady(address(this))) {
+            uint256 previousBalanceOut = outToken.balanceOf(address(this));
+            futura.claimReward(address(this));
+            uint256 incomingBalanceOut = outToken.balanceOf(address(this)) - previousBalanceOut;
+            if (incomingBalanceOut > 0) {
+                onDeposit(incomingBalanceOut);
+            }
         }
     }
 
