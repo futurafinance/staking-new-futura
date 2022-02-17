@@ -19,5 +19,5 @@
 - Cake Investment Plan (Funding Plan)
   > - This is used by the investor to invest in Pancakeswap's Cake on mainnet. For testnet we need to deploy our own masterchef (Masterchef2.sol) and Fortuna / Fortuna Split Bar tokens that will act as "Cake".
   
- - Masterchef2
+- Masterchef2
   > - This is used to invest into Cake on testnet, while on mainnet we don't need this. 
