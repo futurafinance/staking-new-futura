@@ -1,5 +1,7 @@
 # staking-new-futura
 
+![image](https://user-images.githubusercontent.com/94194537/154544640-d648c282-abbc-4046-9aea-5433605b19e1.png)
+
 - Futura Fuel 
   > - Helps processing the rewrads queue from small fees out of the pools
   > - Notice you need to allow the other contracts to interact with it using setAuthorizedContract function for Fuel, Futura, Investor and Masterchef
